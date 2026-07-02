@@ -108,7 +108,7 @@ async function main() {
           categoryId: softwareCategory.id,
           companyId: employer.company.id,
           status: 'PUBLISHED',
-          featured: false,
+          featured: true,
           salaryMin: 50000,
           salaryMax: 80000,
           currency: 'ETB',

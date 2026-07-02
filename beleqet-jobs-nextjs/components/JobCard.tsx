@@ -37,10 +37,17 @@ export default function JobCard({ job }: { job: ApiJob }) {
       </div>
 
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-        <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${typeStyles[displayType] ?? "bg-muted/10 text-muted"}`}>
-          {displayType}
-        </span>
-        <span className="text-[11px] text-muted">{timeAgo(job.createdAt)}</span>
+        <div className="flex items-center gap-2 overflow-hidden mr-2">
+          <span className={`shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full ${typeStyles[displayType] ?? "bg-muted/10 text-muted"}`}>
+            {displayType}
+          </span>
+          {job.category && (
+            <span className="truncate text-[11px] font-medium px-2.5 py-1 rounded-full bg-pageBg text-muted border border-border">
+              {job.category.label}
+            </span>
+          )}
+        </div>
+        <span className="shrink-0 text-[11px] text-muted">{timeAgo(job.createdAt)}</span>
       </div>
     </Link>
   );

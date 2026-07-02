@@ -7,6 +7,7 @@ import {
   GraduationCap,
   Cog,
   MoreHorizontal,
+  Briefcase,
   type LucideIcon,
 } from "lucide-react";
 import { fetchCategories } from "@/lib/api";
@@ -19,12 +20,21 @@ const iconMap: Record<string, LucideIcon> = {
   "graduation-cap": GraduationCap,
   cog: Cog,
   "more-horizontal": MoreHorizontal,
+  briefcase: Briefcase,
 };
 
 export default async function CategoryGrid() {
   const categories = await fetchCategories();
 
   if (categories.length === 0) return null;
+
+  // Ensure categories that contain our demo jobs appear in the first 21
+  const prioritizedSlugs = ['software-design-and-development', 'marketing-and-advertisement'];
+  const sortedCategories = [...categories].sort((a, b) => {
+    if (prioritizedSlugs.includes(a.slug) && !prioritizedSlugs.includes(b.slug)) return -1;
+    if (!prioritizedSlugs.includes(a.slug) && prioritizedSlugs.includes(b.slug)) return 1;
+    return 0;
+  });
 
   return (
     <section className="container-page py-14">
@@ -39,7 +49,7 @@ export default async function CategoryGrid() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-        {categories.map((cat) => {
+        {sortedCategories.slice(0, 21).map((cat) => {
           const Icon = (cat.icon && iconMap[cat.icon]) || MoreHorizontal;
           return (
             <Link

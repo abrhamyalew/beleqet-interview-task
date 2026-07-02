@@ -9,7 +9,7 @@ import {
   MoreHorizontal,
   type LucideIcon,
 } from "lucide-react";
-import { categories } from "@/lib/mockData";
+import { fetchCategories } from "@/lib/api";
 
 const iconMap: Record<string, LucideIcon> = {
   laptop: Laptop,
@@ -21,7 +21,11 @@ const iconMap: Record<string, LucideIcon> = {
   "more-horizontal": MoreHorizontal,
 };
 
-export default function CategoryGrid() {
+export default async function CategoryGrid() {
+  const categories = await fetchCategories();
+
+  if (categories.length === 0) return null;
+
   return (
     <section className="container-page py-14">
       <div className="flex items-end justify-between mb-6">
@@ -36,18 +40,17 @@ export default function CategoryGrid() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
         {categories.map((cat) => {
-          const Icon = iconMap[cat.icon] ?? MoreHorizontal;
+          const Icon = (cat.icon && iconMap[cat.icon]) || MoreHorizontal;
           return (
             <Link
               key={cat.id}
-              href={`/jobs?category=${cat.id}`}
+              href={`/jobs?category=${cat.slug}`}
               className="flex flex-col items-center text-center gap-2 rounded-xl border border-border bg-white px-3 py-5 hover:border-brandGreen hover:shadow-card transition-all"
             >
               <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-brandGreen/10 text-brandGreen">
                 <Icon className="h-4.5 w-4.5" />
               </span>
               <span className="text-xs font-semibold text-ink">{cat.label}</span>
-              <span className="text-[11px] text-muted">{cat.count} jobs</span>
             </Link>
           );
         })}

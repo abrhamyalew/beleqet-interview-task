@@ -48,9 +48,91 @@ async function main() {
     prisma.freelanceCategory.upsert({ where: { slug: 'video-animation' },   update: {}, create: { slug: 'video-animation',   label: 'Video & Animation',   icon: 'clapperboard' } }),
     prisma.freelanceCategory.upsert({ where: { slug: 'writing' },           update: {}, create: { slug: 'writing',           label: 'Writing & Translation', icon: 'pen-line' } }),
   ]);
-  console.log('✅ Freelance categories created');
+  console.log('Freelance categories created');
 
-  console.log('\n🎉 Database seeded successfully with Production Categories!');
+  // ── Demo Employer & Company ──────────────────────────────────────────────
+  const employerPassword = await bcrypt.hash('password123', 10);
+  const employer = await prisma.user.upsert({
+    where: { email: 'employer@beleqet.com' },
+    update: {},
+    create: {
+      email: 'employer@beleqet.com',
+      passwordHash: employerPassword,
+      firstName: 'Demo',
+      lastName: 'Employer',
+      role: 'EMPLOYER',
+      emailVerified: true,
+      company: {
+        create: {
+          name: 'Tech Solutions PLC',
+          description: 'A leading tech company in Addis Ababa.',
+          website: 'https://techsolutions.com',
+          logoUrl: 'https://via.placeholder.com/150',
+          industry: 'IT & Software',
+        }
+      }
+    },
+    include: { company: true }
+  });
+
+  console.log('Demo employer and company created');
+
+  // ── Demo Jobs ──────────────────────────────────────────────────────────────
+  const softwareCategory = await prisma.jobCategory.findFirst({ where: { slug: 'software-design-and-development' } });
+  const marketingCategory = await prisma.jobCategory.findFirst({ where: { slug: 'marketing-and-advertisement' } });
+
+  if (softwareCategory && marketingCategory && employer.company) {
+    await prisma.job.createMany({
+      skipDuplicates: true,
+      data: [
+        {
+          title: 'Senior Frontend Developer',
+          description: 'We are looking for a Senior React Developer to join our team. You will be building scalable UIs with Next.js.',
+          requirements: '3+ years experience, React, Next.js, Tailwind CSS',
+          location: 'Addis Ababa',
+          type: 'FULL_TIME',
+          categoryId: softwareCategory.id,
+          companyId: employer.company.id,
+          status: 'PUBLISHED',
+          featured: true,
+          salaryMin: 40000,
+          salaryMax: 60000,
+          currency: 'ETB',
+        },
+        {
+          title: 'Backend Node.js Engineer',
+          description: 'Join us to build high-performance APIs using NestJS and PostgreSQL.',
+          requirements: 'NestJS, Prisma, PostgreSQL, Docker',
+          location: 'Remote',
+          type: 'REMOTE',
+          categoryId: softwareCategory.id,
+          companyId: employer.company.id,
+          status: 'PUBLISHED',
+          featured: false,
+          salaryMin: 50000,
+          salaryMax: 80000,
+          currency: 'ETB',
+        },
+        {
+          title: 'Digital Marketing Specialist',
+          description: 'Help us grow our brand presence online with SEO and social media campaigns.',
+          requirements: 'SEO, Google Ads, Content Strategy',
+          location: 'Addis Ababa',
+          type: 'FULL_TIME',
+          categoryId: marketingCategory.id,
+          companyId: employer.company.id,
+          status: 'PUBLISHED',
+          featured: true,
+          salaryMin: 25000,
+          salaryMax: 35000,
+          currency: 'ETB',
+        }
+      ]
+    });
+    console.log('Demo jobs created');
+  }
+
+  console.log('\n Database seeded successfully with Categories & Demo Jobs!');
 }
 
 main()

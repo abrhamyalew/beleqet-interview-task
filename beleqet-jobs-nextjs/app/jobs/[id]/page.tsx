@@ -1,17 +1,27 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MapPin, Clock, Building2, ArrowLeft } from "lucide-react";
-import { jobs } from "@/lib/mockData";
+import { fetchJob, fetchJobs, formatJobType, timeAgo } from "@/lib/api";
 
-export function generateStaticParams() {
-  return jobs.map((job) => ({ id: job.id }));
-}
+export const dynamic = "force-dynamic";
 
-export default function JobDetailPage({ params }: { params: { id: string } }) {
-  const job = jobs.find((j) => j.id === params.id);
-  if (!job) notFound();
+export default async function JobDetailPage({ params }: { params: { id: string } }) {
+  let job;
+  try {
+    job = await fetchJob(params.id);
+  } catch {
+    notFound();
+  }
 
-  const related = jobs.filter((j) => j.category === job.category && j.id !== job.id).slice(0, 3);
+  const displayType = formatJobType(job.type);
+  const companyName = job.company?.name || job.companyName || "Company";
+
+  // grab related jobs from same category
+  let related: typeof job[] = [];
+  try {
+    const { items } = await fetchJobs({ category: job.category?.slug, limit: 4 });
+    related = items.filter((j) => j.id !== job.id).slice(0, 3);
+  } catch {}
 
   return (
     <div className="container-page py-10">
@@ -28,27 +38,47 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
               </span>
               <div>
                 <h1 className="text-xl sm:text-2xl font-extrabold text-ink leading-snug">{job.title}</h1>
-                <p className="text-muted mt-1">{job.company}</p>
+                <p className="text-muted mt-1">{companyName}</p>
                 <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted">
                   <span className="flex items-center gap-1">
                     <MapPin className="h-3.5 w-3.5" /> {job.location}
                   </span>
                   <span className="flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5" /> {job.postedAgo}
+                    <Clock className="h-3.5 w-3.5" /> {timeAgo(job.createdAt)}
                   </span>
                   <span className="rounded-full bg-brandGreen/10 text-brandGreen font-semibold px-2.5 py-1">
-                    {job.type}
+                    {displayType}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="mt-7 pt-7 border-t border-border">
+            {(job.salaryMin || job.salaryMax) && (
+              <div className="mt-5 pt-5 border-t border-border">
+                <h2 className="text-sm font-semibold text-ink mb-1">Salary</h2>
+                <p className="text-sm text-muted">
+                  {job.salaryMin && job.salaryMax
+                    ? `${job.salaryMin.toLocaleString()} – ${job.salaryMax.toLocaleString()} ${job.currency}`
+                    : job.salaryMin
+                    ? `From ${job.salaryMin.toLocaleString()} ${job.currency}`
+                    : `Up to ${job.salaryMax!.toLocaleString()} ${job.currency}`}
+                </p>
+              </div>
+            )}
+
+            <div className="mt-5 pt-5 border-t border-border">
               <h2 className="text-sm font-semibold text-ink mb-3">Job Description</h2>
-              <p className="text-sm text-muted leading-relaxed">{job.description}</p>
+              <p className="text-sm text-muted leading-relaxed whitespace-pre-line">{job.description}</p>
             </div>
 
-            {job.tags && (
+            {job.requirements && (
+              <div className="mt-6">
+                <h2 className="text-sm font-semibold text-ink mb-3">Requirements</h2>
+                <p className="text-sm text-muted leading-relaxed whitespace-pre-line">{job.requirements}</p>
+              </div>
+            )}
+
+            {job.tags && job.tags.length > 0 && (
               <div className="mt-6 flex flex-wrap gap-2">
                 {job.tags.map((tag) => (
                   <span key={tag} className="text-xs font-medium text-muted bg-pageBg border border-border rounded-full px-3 py-1">
@@ -81,7 +111,7 @@ export default function JobDetailPage({ params }: { params: { id: string } }) {
                     className="block rounded-lg hover:bg-pageBg p-2 -mx-2 transition-colors"
                   >
                     <p className="text-sm font-semibold text-ink line-clamp-1">{r.title}</p>
-                    <p className="text-xs text-muted mt-0.5">{r.company} · {r.location}</p>
+                    <p className="text-xs text-muted mt-0.5">{r.company?.name || r.companyName} · {r.location}</p>
                   </Link>
                 ))}
               </div>

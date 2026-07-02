@@ -65,7 +65,9 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="container-page py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-white/50">
           <p>© {new Date().getFullYear()} Beleqet Vacancy Platform. All rights reserved.</p>
-          <p>Built for fast job discovery.</p>
+          <p>
+            Demo by <a href="https://t.me/heroborn" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors font-medium">@heroborn</a>
+          </p>
         </div>
       </div>
     </footer>

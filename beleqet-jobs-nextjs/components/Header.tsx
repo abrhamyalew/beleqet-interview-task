@@ -36,7 +36,7 @@ export default function Header() {
             rel="noopener noreferrer" 
             className="hidden lg:flex items-center gap-1.5 text-xs font-semibold text-brandGreen bg-brandGreen/10 px-3 py-1.5 rounded-full hover:bg-brandGreen/20 transition-colors mr-1 border border-brandGreen/20"
           >
-            ✨ Demo by @heroborn
+            Demo by @heroborn
           </a>
           <Link
             href="/login"
